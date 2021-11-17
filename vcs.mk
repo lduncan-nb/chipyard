@@ -1,4 +1,11 @@
+
+ifndef	DUMP_FSDB
 WAVEFORM_FLAG=+vcdplusfile=$(sim_out_name).vpd
+else
+WAVEFORM_FLAG=+fsdbfile=$(sim_out_name).fsdb
+PREPROC_DEFINES+=+define+FSDB
+VCS_NONCC_OPTS+=-kdb -lca -debug_accses+all
+endif
 
 # If ntb_random_seed unspecified, vcs uses 1 as constant seed.
 # Set ntb_random_seed_automatic to actually get a random seed
@@ -20,12 +27,12 @@ VCS_CXXFLAGS = $(SIM_CXXFLAGS)
 VCS_LDFLAGS = $(SIM_LDFLAGS)
 
 # vcs requires LDFLAGS to not include library names (i.e. -l needs to be separate)
-VCS_CC_OPTS = \
+VCS_CC_OPTS += \
 	-CFLAGS "$(VCS_CXXFLAGS)" \
 	-LDFLAGS "$(filter-out -l%,$(VCS_LDFLAGS))" \
 	$(filter -l%,$(VCS_LDFLAGS))
 
-VCS_NONCC_OPTS = \
+VCS_NONCC_OPTS += \
 	-notice \
 	-line \
 	+lint=all,noVCDE,noONGS,noUI \
@@ -40,11 +47,11 @@ VCS_NONCC_OPTS = \
 	-f $(sim_common_files) \
 	-sverilog +systemverilogext+.sv+.svi+.svh+.svt -assert svaext +libext+.sv \
 	+v2k +verilog2001ext+.v95+.vt+.vp +libext+.v \
-	-debug_pp \
+	-debug_access+pp \
 	+incdir+$(build_dir) \
 	$(sim_vsrcs)
 
-PREPROC_DEFINES = \
+PREPROC_DEFINES += \
 	+define+VCS \
 	+define+CLOCK_PERIOD=$(CLOCK_PERIOD) \
 	+define+RESET_DELAY=$(RESET_DELAY) \
